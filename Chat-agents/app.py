@@ -1,22 +1,20 @@
 import streamlit as st
-from huggingface_hub import InferenceClient
+from transformers import pipeline
 
-# --- Hugging Face API setup ---
-HF_TOKEN = "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"
-MODEL_NAME = "tiiuae/falcon-7b-instruct"
-client = InferenceClient(model=MODEL_NAME, token=HF_TOKEN, provider="huggingface")
+# --- Initialize text-generation pipeline ---
+generator = pipeline("text-generation", model="bigscience/bloom-560m")  # small hosted model
 
 # --- Planner agent ---
 def planner_agent(task):
-    prompt = f"Planner, break down this task into 3 clear steps:\nTask: {task}"
-    response = client.text_generation(prompt, max_new_tokens=150)
-    return response[0]["generated_text"].strip()
+    prompt = f"Planner: Break down this task into clear steps:\nTask: {task}"
+    output = generator(prompt, max_new_tokens=150, do_sample=True, temperature=0.5)
+    return output[0]["generated_text"].strip()
 
 # --- Executor agent ---
 def executor_agent(plan):
-    prompt = f"Executor, follow these steps with clear instructions:\n{plan}"
-    response = client.text_generation(prompt, max_new_tokens=200)
-    return response[0]["generated_text"].strip()
+    prompt = f"Executor: Follow these steps and provide detailed instructions:\n{plan}"
+    output = generator(prompt, max_new_tokens=150, do_sample=True, temperature=0.5)
+    return output[0]["generated_text"].strip()
 
 # --- Streamlit UI ---
 st.set_page_config(page_title="🤖 Two Agents Demo", page_icon="🤖")
