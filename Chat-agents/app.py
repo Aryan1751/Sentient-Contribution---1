@@ -73,16 +73,9 @@ st.markdown("""
         border-top: 1px solid #eee;
         margin: 20px 0;
     }
-    .spinner {
-        animation: bounce 1s infinite;
-    }
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
     }
     /* Responsive design */
     @media (max-width: 600px) {
@@ -114,7 +107,7 @@ with st.container():
     st.markdown('<div class="subtitle">Latest crypto news, summarized in seconds!</div>', unsafe_allow_html=True)
 
 if st.button("Fetch & Summarize News", key="fetch-button", help="Click to get the latest crypto news"):
-    with st.spinner("Grabbing news...", _class="spinner"):
+    with st.spinner("Grabbing news..."):
         try:
             news = newsapi.get_everything(
                 q="bitcoin OR ethereum OR crypto",
