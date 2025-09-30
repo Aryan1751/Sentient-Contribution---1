@@ -4,7 +4,7 @@ from huggingface_hub import InferenceClient
 
 # --- Hugging Face API setup ---
 HF_TOKEN = "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"
-MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.2"
+MODEL_NAME = "MODEL_NAME = "tiiuae/falcon-7b-instruct"
 client = InferenceClient(model=MODEL_NAME, token=HF_TOKEN)
 
 # --- Planner agent ---
@@ -38,3 +38,4 @@ if st.button("Start Conversation") and task:
 # Display chat history
 for msg in st.session_state.chat_history:
     st.text(msg)
+
