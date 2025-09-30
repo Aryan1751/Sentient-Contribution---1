@@ -1,14 +1,12 @@
 import streamlit as st
 import os
-from dotenv import load_dotenv
 from newsapi import NewsApiClient
 from transformers import pipeline
 
-# Load environment variables
-load_dotenv()
-NEWS_API_KEY = os.getenv("NEWS_API_KEY")
+# Check for NewsAPI key
+NEWS_API_KEY = os.getenv("5ba64418ac10448b872666e55e17298d")
 if not NEWS_API_KEY:
-    st.error("Error: NEWS_API_KEY not found in .env file. Get one at newsapi.org.")
+    st.error("Error: NEWS_API_KEY not found. Add it to Streamlit Secrets or get one at newsapi.org.")
     st.stop()
 
 # Initialize NewsAPI and summarizer
@@ -16,7 +14,7 @@ try:
     newsapi = NewsApiClient(api_key=NEWS_API_KEY)
     summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 except Exception as e:
-    st.error(f"Failed to initialize: {str(e)}")
+    st.error(f"Failed to initialize app: {str(e)}")
     st.stop()
 
 # Streamlit UI
