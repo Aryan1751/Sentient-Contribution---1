@@ -1,7 +1,6 @@
 import streamlit as st
 from huggingface_hub import InferenceClient
 
-# Your HuggingFace API token
 HF_TOKEN = "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"
 client = InferenceClient(token=HF_TOKEN)
 
@@ -13,12 +12,20 @@ if "chat_history" not in st.session_state:
 
 def planner_agent(task):
     prompt = f"Planner: Break down this task into steps:\nTask: {task}"
-    response = client.text_generation("gpt2", prompt, max_new_tokens=50)
+    response = client.text_generation(
+        model="bigscience/bloom-560m",
+        inputs=prompt,
+        max_new_tokens=50
+    )
     return response.generated_text.strip()
 
 def executor_agent(plan):
     prompt = f"Executor: Follow these steps and provide instructions:\n{plan}"
-    response = client.text_generation("gpt2", prompt, max_new_tokens=50)
+    response = client.text_generation(
+        model="bigscience/bloom-560m",
+        inputs=prompt,
+        max_new_tokens=50
+    )
     return response.generated_text.strip()
 
 task = st.text_input("Enter a task for the agents:")
