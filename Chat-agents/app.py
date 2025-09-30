@@ -1,66 +1,46 @@
 import streamlit as st
-import os
 from newsapi import NewsApiClient
 from transformers import pipeline
 
 # Hardcoded NewsAPI key (temporary, insecure - revert to Secrets after testing)
 NEWS_API_KEY = "5ba64418ac10448b872666e55e17298d"
 if not NEWS_API_KEY:
-    st.error("Error: NEWS_API_KEY not found. Add it to Streamlit Secrets or get one at newsapi.org.")
+    st.error("Error: NEWS_API_KEY not found.")
     st.stop()
 
-# Initialize NewsAPI and summarizer
 try:
     newsapi = NewsApiClient(api_key=NEWS_API_KEY)
     summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 except Exception as e:
-    st.error(f"Failed to initialize app: {str(e)}")
+    st.error(f"Init failed: {str(e)}")
     st.stop()
 
-# Streamlit UI
 st.title("Crypto News Summarizer 🚀")
-st.write("Get the latest crypto news summarized in seconds! Powered by NewsAPI and BART.")
+st.write("Latest crypto news, summarized fast!")
 
 if st.button("Fetch & Summarize News"):
-    with st.spinner("Grabbing crypto news..."):
+    with st.spinner("Grabbing news..."):
         try:
-            # Fetch top crypto news with specific sources
             news = newsapi.get_everything(
                 q="bitcoin OR ethereum OR crypto",
-                sources="coindesk,cointelegraph",  # Confirmed exact IDs from NewsAPI docs
                 language="en",
                 sort_by="publishedAt",
                 page_size=3
             )
-            
-            # Fallback if sources fail (e.g., param error)
             if news["status"] != "ok":
-                st.warning(f"Sources fetch failed: {news.get('message', 'Unknown error')}. Trying without sources...")
-                news = newsapi.get_everything(
-                    q="bitcoin OR ethereum OR crypto",
-                    language="en",
-                    sort_by="publishedAt",
-                    page_size=3
-                )
-            
-            if news["status"] != "ok":
-                st.error(f"Failed to fetch news: {news.get('message', 'Check your API key or internet connection.')}")
+                st.error(f"News fetch failed: {news.get('message')}")
                 st.stop()
             
-            # Summarize each article
             for article in news["articles"]:
                 title = article["title"]
                 desc = article["description"] or ""
                 text = f"{title}. {desc}"
                 
-                # Summarize with BART
                 try:
                     summary = summarizer(text, max_length=60, min_length=20, do_sample=False)[0]["summary_text"]
                 except Exception as e:
-                    st.warning(f"Summary failed for '{title}': {str(e)}")
-                    summary = "Unable to summarize this article."
+                    summary = "Unable to summarize."
                 
-                # Display results
                 st.subheader(title)
                 st.write(f"**Source**: {article['source']['name']}")
                 st.write(f"**Summary**: {summary}")
@@ -68,7 +48,6 @@ if st.button("Fetch & Summarize News"):
                 st.markdown("---")
                 
         except Exception as e:
-            st.error(f"Oops, something broke: {str(e)}")
-            st.write("Check your API key, internet, or try again later.")
+            st.error(f"Error: {str(e)}")
 
-st.write("Built for the Sentient News Agents track 📰")
+st.write("Built for Sentient News Agents 📰")
