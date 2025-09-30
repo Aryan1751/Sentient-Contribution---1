@@ -24,17 +24,27 @@ st.write("Get the latest crypto news summarized in seconds! Powered by NewsAPI a
 if st.button("Fetch & Summarize News"):
     with st.spinner("Grabbing crypto news..."):
         try:
-            # Fetch top crypto news
+            # Fetch top crypto news with specific sources
             news = newsapi.get_everything(
                 q="bitcoin OR ethereum OR crypto",
-                sources="coindesk,cointelegraph",
+                sources="coindesk,cointelegraph",  # Confirmed exact IDs from NewsAPI docs
                 language="en",
                 sort_by="publishedAt",
                 page_size=3
             )
             
+            # Fallback if sources fail (e.g., param error)
             if news["status"] != "ok":
-                st.error("Failed to fetch news. Check your API key or internet connection.")
+                st.warning(f"Sources fetch failed: {news.get('message', 'Unknown error')}. Trying without sources...")
+                news = newsapi.get_everything(
+                    q="bitcoin OR ethereum OR crypto",
+                    language="en",
+                    sort_by="publishedAt",
+                    page_size=3
+                )
+            
+            if news["status"] != "ok":
+                st.error(f"Failed to fetch news: {news.get('message', 'Check your API key or internet connection.')}")
                 st.stop()
             
             # Summarize each article
