@@ -3,20 +3,21 @@ from huggingface_hub import InferenceClient
 
 # --- Hugging Face API setup ---
 HF_TOKEN = "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"
-MODEL_NAME = "tiiuae/falcon-7b-instruct"
-client = InferenceClient(model=MODEL_NAME, token=HF_TOKEN)
+MODEL_NAME = "bigcode/starcoder"  # Free API-call-ready model
+client = InferenceClient(model=MODEL_NAME, token=HF_TOKEN, provider="huggingface")
 
 # --- Planner agent ---
 def planner_agent(task):
-    prompt = f"You are a planner. Break down the following task into 3 numbered steps:\nTask: {task}"
+    prompt = f"Planner, break down this task into 3 clear steps:\nTask: {task}"
     response = client.text_generation(prompt, max_new_tokens=150, temperature=0.3)
-    return response.generated_text.strip() if hasattr(response, "generated_text") else str(response)
+    # For HF Inference API, response is a list of dicts
+    return response[0]["generated_text"].strip()
 
 # --- Executor agent ---
 def executor_agent(plan):
-    prompt = f"You are an executor. For each step below, provide a practical, actionable explanation:\n{plan}"
+    prompt = f"Executor, for each step below, provide actionable instructions:\n{plan}"
     response = client.text_generation(prompt, max_new_tokens=200, temperature=0.3)
-    return response.generated_text.strip() if hasattr(response, "generated_text") else str(response)
+    return response[0]["generated_text"].strip()
 
 # --- Streamlit UI ---
 st.set_page_config(page_title="🤖 Two Agents Demo", page_icon="🤖")
