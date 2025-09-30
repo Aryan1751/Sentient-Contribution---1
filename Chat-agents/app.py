@@ -1,24 +1,24 @@
 import streamlit as st
 from transformers import pipeline
 
-# --- Initialize text-generation pipeline ---
-generator = pipeline("text-generation", model="bigscience/bloom-560m")  # small hosted model
+# Initialize text-generation pipeline with a small HF model
+generator = pipeline("text-generation", model="bigscience/bloom-560m")
 
-# --- Planner agent ---
+# Planner agent
 def planner_agent(task):
     prompt = f"Planner: Break down this task into clear steps:\nTask: {task}"
-    output = generator(prompt, max_new_tokens=150, do_sample=True, temperature=0.5)
+    output = generator(prompt, max_new_tokens=100, do_sample=True, temperature=0.5)
     return output[0]["generated_text"].strip()
 
-# --- Executor agent ---
+# Executor agent
 def executor_agent(plan):
-    prompt = f"Executor: Follow these steps and provide detailed instructions:\n{plan}"
-    output = generator(prompt, max_new_tokens=150, do_sample=True, temperature=0.5)
+    prompt = f"Executor: Follow these steps and provide instructions:\n{plan}"
+    output = generator(prompt, max_new_tokens=100, do_sample=True, temperature=0.5)
     return output[0]["generated_text"].strip()
 
-# --- Streamlit UI ---
+# Streamlit UI
 st.set_page_config(page_title="🤖 Two Agents Demo", page_icon="🤖")
-st.title("🤖 Interactive Planner & Executor Demo")
+st.title("🤖 Planner & Executor Demo")
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
