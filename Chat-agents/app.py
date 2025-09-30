@@ -3,8 +3,8 @@ import os
 from newsapi import NewsApiClient
 from transformers import pipeline
 
-# Check for NewsAPI key
-NEWS_API_KEY = os.getenv("NEWS_API_KEY")
+# Hardcoded NewsAPI key (temporary, insecure - revert to Secrets after testing)
+NEWS_API_KEY = "5ba64418ac10448b872666e55e17298d"
 if not NEWS_API_KEY:
     st.error("Error: NEWS_API_KEY not found. Add it to Streamlit Secrets or get one at newsapi.org.")
     st.stop()
