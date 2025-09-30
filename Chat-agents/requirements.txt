@@ -1,9 +1,9 @@
-streamlit==1.38.0
-requests==2.32.3
-newsapi-python==0.2.7
-transformers==4.44.2
-torch==2.4.1+cpu
-torchaudio==2.4.1+cpu
-torchvision==0.19.1+cpu
---index-url https://download.pytorch.org/whl/cpu
-python-dotenv==1.0.1
+streamlit
+requests
+newsapi-python
+transformers
+torch
+torchaudio
+torchvision
+python-dotenv
+
