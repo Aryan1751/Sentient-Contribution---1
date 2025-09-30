@@ -1,41 +1,66 @@
 import streamlit as st
-from huggingface_hub import InferenceClient
+import os
+from dotenv import load_dotenv
+from newsapi import NewsApiClient
+from transformers import pipeline
 
-HF_TOKEN = "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"
-client = InferenceClient(token=HF_TOKEN)
+# Load environment variables
+load_dotenv()
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")
+if not NEWS_API_KEY:
+    st.error("Error: NEWS_API_KEY not found in .env file. Get one at newsapi.org.")
+    st.stop()
 
-st.set_page_config(page_title="🤖 Two Agents Demo", page_icon="🤖")
-st.title("🤖 Planner & Executor Demo")
+# Initialize NewsAPI and summarizer
+try:
+    newsapi = NewsApiClient(api_key=NEWS_API_KEY)
+    summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+except Exception as e:
+    st.error(f"Failed to initialize: {str(e)}")
+    st.stop()
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+# Streamlit UI
+st.title("Crypto News Summarizer 🚀")
+st.write("Get the latest crypto news summarized in seconds! Powered by NewsAPI and BART.")
 
-def planner_agent(task):
-    prompt = f"Planner: Break down this task into steps:\nTask: {task}"
-    response = client.text_generation(
-        model="bigscience/bloom-560m",
-        inputs=prompt,
-        max_new_tokens=50
-    )
-    return response.generated_text.strip()
+if st.button("Fetch & Summarize News"):
+    with st.spinner("Grabbing crypto news..."):
+        try:
+            # Fetch top crypto news
+            news = newsapi.get_everything(
+                q="bitcoin OR ethereum OR crypto",
+                sources="coindesk,cointelegraph",
+                language="en",
+                sort_by="publishedAt",
+                page_size=3
+            )
+            
+            if news["status"] != "ok":
+                st.error("Failed to fetch news. Check your API key or internet connection.")
+                st.stop()
+            
+            # Summarize each article
+            for article in news["articles"]:
+                title = article["title"]
+                desc = article["description"] or ""
+                text = f"{title}. {desc}"
+                
+                # Summarize with BART
+                try:
+                    summary = summarizer(text, max_length=60, min_length=20, do_sample=False)[0]["summary_text"]
+                except Exception as e:
+                    st.warning(f"Summary failed for '{title}': {str(e)}")
+                    summary = "Unable to summarize this article."
+                
+                # Display results
+                st.subheader(title)
+                st.write(f"**Source**: {article['source']['name']}")
+                st.write(f"**Summary**: {summary}")
+                st.write(f"[Read more]({article['url']})")
+                st.markdown("---")
+                
+        except Exception as e:
+            st.error(f"Oops, something broke: {str(e)}")
+            st.write("Check your API key, internet, or try again later.")
 
-def executor_agent(plan):
-    prompt = f"Executor: Follow these steps and provide instructions:\n{plan}"
-    response = client.text_generation(
-        model="bigscience/bloom-560m",
-        inputs=prompt,
-        max_new_tokens=50
-    )
-    return response.generated_text.strip()
-
-task = st.text_input("Enter a task for the agents:")
-
-if st.button("Start Conversation") and task:
-    planner_msg = planner_agent(task)
-    st.session_state.chat_history.append(f"Planner:\n{planner_msg}")
-
-    executor_msg = executor_agent(planner_msg)
-    st.session_state.chat_history.append(f"Executor:\n{executor_msg}")
-
-for msg in st.session_state.chat_history:
-    st.text(msg)
+st.write("Built for the Sentient News Agents track 📰")
